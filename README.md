@@ -11,3 +11,13 @@ create and activate a Python virtual environment
 python -m venv venv
 ./venv/scripts/activate
 ```
+
+install necessary packages
+```
+pip install -r .\requirements.txt
+```
+
+run the app
+```
+streamlit run app.py
+```
