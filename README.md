@@ -21,3 +21,5 @@ run the app
 ```
 streamlit run app.py
 ```
+
+The app will open in a browser window. 
