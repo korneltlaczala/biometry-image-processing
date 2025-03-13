@@ -5,7 +5,7 @@ from image_operations import convert_to_grayscale
 from image_operations import negative
 from image_operations import adjust_brightness, adjust_contrast, binarize, compute_histogram
 from image_operations import mean_filter, mean_filter, gaussian_filter, sharpen_filter
-from image_operations import convert_image_to_bytes
+# from image_operations import convert_image_to_bytes
 
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
