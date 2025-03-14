@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from image_operations import convert_to_grayscale
 from image_operations import negative
-from image_operations import adjust_brightness, adjust_contrast, binarize, compute_histogram
+from image_operations import adjust_brightness, adjust_exposure, adjust_contrast, binarize, compute_histogram
 from image_operations import mean_filter, mean_filter, gaussian_filter, sharpen_filter
 # from image_operations import convert_image_to_bytes
 
@@ -21,6 +21,7 @@ if uploaded_file is not None:
     st.sidebar.subheader("Pixel Operations")
     operation = st.sidebar.selectbox("Choose option", [
         "Grayscale",
+        "Exposure",
         "Brightness",
         "Contrast",
         "Negative",
@@ -38,9 +39,12 @@ if uploaded_file is not None:
 
     if operation == "Grayscale":
         result = convert_to_grayscale(modified_img)
+    elif operation == "Exposure":
+        factor = st.sidebar.slider("Exposure", 0.1, 3.0, 1.0)
+        result = adjust_exposure(img, factor)
     elif operation == "Brightness":
-        factor = st.sidebar.slider("Brightness", 0.1, 3.0, 1.0)
-        result = adjust_brightness(img, factor)
+        value = st.sidebar.slider("Brightness", -255, 255, 0)
+        result = adjust_brightness(img, value)
     elif operation == "Contrast":
         factor = st.sidebar.slider("Kontrast", 1.0, 3.0, 1.0)
         result = adjust_contrast(img, factor)
@@ -83,10 +87,3 @@ if uploaded_file is not None:
             st.subheader("Modified Image")
             plt = compute_histogram(result)
             st.pyplot(plt)
-
-   
-
-
-
-
-    

@@ -9,12 +9,18 @@ def negative(img):
     negative_img = 255 - img_arr
     return Image.fromarray(negative_img.astype(np.uint8))
 
-def adjust_brightness(img, factor):
+def adjust_exposure(img, factor):
     img_arr = np.array(img)
     img_arr = img_arr * factor
     img_arr = np.clip(img_arr, 0, 255)
-    bright_img = Image.fromarray(img_arr.astype(np.uint8))
-    return bright_img
+    exposure_img = Image.fromarray(img_arr.astype(np.uint8))
+    return exposure_img
+
+def adjust_brightness(img, value):
+    img_arr = np.array(img, dtype=np.int32)
+    brightness_img = img_arr + value
+    brightness_img = np.clip(brightness_img, 0, 255)
+    return Image.fromarray(brightness_img.astype(np.uint8))
 
 def convert_to_grayscale(img):
     img_arr = np.array(img)  
