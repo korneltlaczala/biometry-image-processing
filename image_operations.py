@@ -27,7 +27,6 @@ def convert_to_grayscale(img):
     if len(img_arr.shape) == 3:  
         gray_img = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])  
         return Image.fromarray(gray_img.astype(np.uint8))  
-        
     else:
         return img 
     
@@ -36,6 +35,11 @@ def adjust_contrast(img, factor):
     mean = np.mean(img_arr)
     contrast_img = np.clip((img_arr - mean) * factor + mean, 0, 255)
     return Image.fromarray(contrast_img.astype(np.uint8))
+
+def adjust_gamma(img, gamma):
+    img_arr = np.array(img)
+    gamma_img = np.power(img_arr / 255.0, gamma) * 255
+    return Image.fromarray(gamma_img.astype(np.uint8))
 
 def binarize(img, threshold=128):
     img_arr = np.array(img)
@@ -115,6 +119,9 @@ def apply_filter(img, kernel):
     result = np.zeros_like(img)
 
     img_padded = np.pad(img, ((pad, pad), (pad, pad)), mode='constant', constant_values=0)
+    print(f"Original image shape: {img.shape}")
+    print(f"Padded image shape: {img_padded.shape}")
+
 
     for i in range(h):
         for j in range(w):
@@ -123,5 +130,4 @@ def apply_filter(img, kernel):
     
     result = np.clip(result, 0, 255)
     return result
-
 
