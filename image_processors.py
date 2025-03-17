@@ -9,9 +9,6 @@ class ProcessorFlow:
         self.processors.append(processor)
 
     def process(self, img):
-        print(f"----------------------")
-        print(f"Before processing:")
-        self.log_params()
         changed_params = False
         for processor in self.processors:
             if processor.changed_params:
@@ -20,13 +17,8 @@ class ProcessorFlow:
                 img = processor.get_last_img()
                 continue
             img = processor.process(img)
-        print(f"After processing:")
-        self.log_params()
         return img
 
-    def log_params(self):
-        for processor in self.processors:
-            print(f"{processor.__class__.__name__}: {processor.changed_params}")
 
 class Processor:
     def __init__(self):
@@ -71,12 +63,6 @@ class GrayscaleProcessor(Processor):
     def _process_pixelwise(self, img_arr):
         return img_arr
 
-    def set_enabled(self, is_enabled):
-        if self._is_enabled == is_enabled:
-            return
-        self.changed_params = True
-        self._is_enabled = is_enabled
-
     @property
     def is_enabled(self):
         return self._is_enabled
@@ -96,15 +82,6 @@ class BrightnessProcessor(Processor):
 
     def _process_pixelwise(self, img_arr):  
         return img_arr
-
-    def set_value(self, value):
-        print(f"setting brightness to {value}, current value is {self._value}")
-        if self._value == value:
-            print(f"Brightness already set to {value}")
-            return
-        print(f"changing brightness")
-        self.changed_params = True
-        self._value = value
 
     @property
     def value(self):

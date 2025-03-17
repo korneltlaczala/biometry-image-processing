@@ -30,10 +30,8 @@ if uploaded_file is not None:
     grayscale = st.sidebar.checkbox("Grayscale", value=grayscale_processor.default_is_enabled)
     brightness_value = st.sidebar.slider("Brightness", -255, 255, brightness_processor.default_value)
 
-    grayscale_processor.set_enabled(grayscale)
-    brightness_processor.set_value(brightness_value)
-    # grayscale_processor.set_param("_is_enabled", grayscale)
-    # brightness_processor.set_param("_value", brightness_value)
+    grayscale_processor.set_param("_is_enabled", grayscale)
+    brightness_processor.set_param("_value", brightness_value)
 
 
     img_processed = processor_flow.process(img)
