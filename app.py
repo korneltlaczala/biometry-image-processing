@@ -65,10 +65,10 @@ if uploaded_file is not None:
     if apply_filter:
         filter = st.sidebar.selectbox("Choose filter", ['gaussian', 'mean', 'sharpening'])
         if filter == 'mean':
-            size = st.sidebar.slider("Size", 3, 15, 3)
+            size = st.sidebar.slider("Size", 3, 15, 3, step=2)
             result = mean_filter(img, size)
         elif filter == 'gaussian':
-            size = st.sidebar.slider("Size", 3, 15, 3)
+            size = st.sidebar.slider("Size", 3, 21, 3, step=2)
             sigma = st.sidebar.slider("Sigma", 0.1, 5.0, 1.0)
             result = gaussian_filter(img, size, sigma)
         elif filter == 'sharpening':

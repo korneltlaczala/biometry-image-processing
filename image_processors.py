@@ -85,8 +85,13 @@ class ExposureProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
-    
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(img_arr.shape[2]):
+                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor, 0, 255)
+        return img_arr
     @property
     def factor(self):
         return self._factor
