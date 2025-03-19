@@ -202,3 +202,51 @@ class BinarizationProcessor(Processor):
     @property
     def threshold(self):
         return self._threshold
+
+
+class MeanFilterProcessor(Processor):
+
+    def __init__(self):
+        super().__init__()
+        self.default_size = 3
+        self._size = self.default_size
+
+    def _process(self, img_arr):
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        return super()._process(img_arr)
+    
+    @property
+    def size(self):
+        return self._size
+
+class GaussianFilterProcessor(Processor):
+
+    def __init__(self):
+        super().__init__()
+        self.default_size = 3
+        self._size = self.default_size
+
+    def _process(self, img_arr):
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        return super()._process(img_arr)
+    @property
+    def size(self):
+        return self._size
+
+class SharpeningFilterProcessor(Processor):
+
+    def __init__(self):
+        super().__init__
+        self.default_size = 3
+        self._size = self.default_size
+
+    def _process(self, img_arr):
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        return super()._process(img_arr)
+    
+    @property
+    def size(self):
+        return self._size
