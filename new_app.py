@@ -18,6 +18,7 @@ if "processor_flow" not in st.session_state:
     st.session_state.grayscale_processor = GrayscaleProcessor()
     st.session_state.negative_processor = NegativeProcessor()
     st.session_state.binarization_processor = BinarizationProcessor()
+    st.session_state.mean_filter_processor = MeanFilterProcessor()
 
     st.session_state.processor_flow.add_processor(st.session_state.brightness_processor)
     st.session_state.processor_flow.add_processor(st.session_state.exposure_processor)
@@ -26,6 +27,7 @@ if "processor_flow" not in st.session_state:
     st.session_state.processor_flow.add_processor(st.session_state.grayscale_processor)
     st.session_state.processor_flow.add_processor(st.session_state.negative_processor)
     st.session_state.processor_flow.add_processor(st.session_state.binarization_processor)
+    st.session_state.processor_flow.add_processor(st.session_state.mean_filter_processor)
     
 uploaded_file = st.file_uploader("Choose file", type=["jpg", "png", "jpeg"])
 try:
@@ -50,6 +52,8 @@ if uploaded_file is not None:
     grayscale_processor = st.session_state.grayscale_processor
     negative_processor = st.session_state.negative_processor
     binarization_processor = st.session_state.binarization_processor
+    mean_filter_processor = st.session_state.mean_filter_processor
+
 
     exposure_factor = st.sidebar.slider("Exposure", 0.1, 3.0, exposure_processor.default_factor)
     brightness_value = st.sidebar.slider("Brightness", -255, 255, brightness_processor.default_value)
@@ -59,6 +63,7 @@ if uploaded_file is not None:
     negative = st.sidebar.checkbox("Negative", value=negative_processor.default_is_enabled)
     binarization = st.sidebar.checkbox("Binarization", value=binarization_processor.default_is_enabled)
     binarization_threshold = st.sidebar.slider("Binarization Threshold", 0, 255, binarization_processor.default_threshold)
+    mean_filter_kernel_size = st.sidebar.slider("Mean Filter Kernel Size", 3, 15, mean_filter_processor.default_size, step=2)
 
     exposure_processor.set_param("_factor", exposure_factor)
     brightness_processor.set_param("_value", brightness_value)
@@ -68,6 +73,7 @@ if uploaded_file is not None:
     negative_processor.set_param("_is_enabled", negative)
     binarization_processor.set_param("_is_enabled", binarization)
     binarization_processor.set_param("_threshold", binarization_threshold)
+    mean_filter_processor.set_param("_size", mean_filter_kernel_size)
 
     img_processed = processor_flow.process(img)
 
