@@ -217,7 +217,7 @@ class MeanFilterProcessor(Processor):
 
         img_arr = kernel.convolute(img_arr)
 
-        return super()._process(img_arr)
+        return img_arr
     
     @property
     def size(self):
@@ -234,7 +234,7 @@ class GaussianFilterProcessor(Processor):
         img_arr = np.array(img_arr, dtype=np.int16)
         
 
-        return super()._process(img_arr)
+        return img_arr
     @property
     def size(self):
         return self._size
@@ -249,7 +249,7 @@ class SharpeningFilterProcessor(Processor):
     def _process(self, img_arr):
         img_arr = np.array(img_arr, dtype=np.int16)
 
-        return super()._process(img_arr)
+        return img_arr
     
     @property
     def size(self):
