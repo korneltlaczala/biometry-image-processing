@@ -65,7 +65,19 @@ class BrightnessProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        if len(img_arr.shape) ==3:
+            channels = 3
+        else:
+            channels = 1
+            img_arr = img_arr[:, :, None]
+
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] + self._value, 0, 255)
+        return img_arr
 
     @property
     def value(self):
@@ -111,7 +123,20 @@ class ContrastProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+
+        if len(img_arr.shape) == 3:
+            channels = 3
+        else:
+            channels = 1
+            img_arr = img_arr[:, :, None]
+        
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    mean = np.mean(img_arr[i, j, c])
+                    img_arr[i, j, c] = np.clip((img_arr[i, j, c] - mean) * self._factor + mean, 0, 255)
+        return img_arr
     
     @property
     def factor(self):
@@ -131,7 +156,19 @@ class GammaProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+        
+        if len(img_arr.shape) == 3:
+            channels = 3
+        else:
+            channels = 1
+            img_arr = img_arr[:, :, None]
+        
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    img_arr[i, j, c] = np.power(img_arr[i, j, c] / 255.0, self._factor) * 255
+        return img_arr
     
     @property
     def factor(self):
@@ -152,7 +189,18 @@ class GrayscaleProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+        
+        if len(img_arr.shape) == 3:
+            channels = 3
+        else:
+            return img_arr
+        
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    img_arr[i, j, c] = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])
+        return img_arr
 
     @property
     def is_enabled(self):
@@ -173,7 +221,19 @@ class NegativeProcessor(Processor):
         return img_arr
     
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+        
+        if len(img_arr.shape) == 3:
+            channels = 3
+        else:
+            channels = 1
+            img_arr = img_arr[:, :, None]
+        
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    img_arr[i, j, c] = img_arr[i, j, c] - 255
+        return img_arr
     
     @property
     def is_enabled(self):
@@ -197,7 +257,19 @@ class BinarizationProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        raise NotImplementedError
+        img_arr = np.array(img_arr, dtype=np.int16)
+        
+        if len(img_arr.shape) == 3:
+            channels = 3
+        else:
+            channels = 1
+            img_arr = img_arr[:, :, None]
+        
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(channels):
+                    img_arr[i, j, c] = np.where(img_arr[i, j, c] > self._threshold, 255, 0)
+        return img_arr
     
     @property
     def threshold(self):
