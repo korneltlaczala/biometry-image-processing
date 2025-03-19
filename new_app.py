@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from image_processors import *
+from image_operations import compute_histogram
 
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
@@ -80,4 +81,18 @@ if uploaded_file is not None:
     with col2:
         st.subheader("Modified Image")
         show_image(img_processed, title="Modified Image")
-    
+
+        
+    st.sidebar.subheader("Histogram")
+    show_histogram = st.sidebar.checkbox("Show histograms")
+
+    if show_histogram:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Original Image")
+            plt = compute_histogram(img)
+            st.pyplot(plt)
+        with col2:
+            st.subheader("Modified Image")
+            plt = compute_histogram(img_processed)
+            st.pyplot(plt)

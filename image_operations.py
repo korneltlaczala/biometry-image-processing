@@ -84,6 +84,7 @@ def gaussian_filter(img, size, sigma):
         lambda x, y: (1/ (2 * np.pi * sigma **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * sigma ** 2)),
         (size, size)
     )
+    print(kernel)
     kernel = kernel / np.sum(kernel)
 
     img_arr = np.array(img)
@@ -98,8 +99,14 @@ def sharpen_filter(img):
         [-1, 5, -1],
         [0, -1, 0]
     ])
+    kernel = np.array([
+        [-1, -1, -1],
+        [-1, 9, -1],
+        [-1, -1, -1]
+    ])
 
     img_arr = np.array(img)
+    img_arr = np.array(img_arr, dtype=np.int16)
     sharpened_img = apply_filter(img_arr, kernel)
 
     return Image.fromarray(sharpened_img.astype(np.uint8))

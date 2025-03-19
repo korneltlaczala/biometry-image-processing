@@ -230,6 +230,7 @@ class GaussianFilterProcessor(Processor):
     def _process(self, img_arr):
         img_arr = np.array(img_arr, dtype=np.int16)
 
+
         return super()._process(img_arr)
     @property
     def size(self):
@@ -250,3 +251,56 @@ class SharpeningFilterProcessor(Processor):
     @property
     def size(self):
         return self._size
+
+class Kernel():
+
+    def __init__(self):
+        self.kernel = None
+
+    def convolute(self, img_arr):
+        h, w = img_arr.shape[0], img_arr.shape[1]
+        pad = self.kernel.shape[0] // 2
+
+        result = np.zeros_like(img_arr)
+
+        if len(img_arr.shape) == 3:
+            chanels = img_arr.shape[2]
+        else:
+            chanels = 1
+            img_arr = img_arr[:, :, None]
+
+        img_padded = np.pad(img_arr, ((pad, pad), (pad, pad), (0, 0)), mode='reflect')
+
+        for i in range(h):
+            for j in range(w):
+                for c in range(chanels):
+                    window = img_padded[i:i + self.kernel.shape[0], j:j + self.kernel.shape[0], c]
+                    result[i, j, c] = np.sum(window * self.kernel)
+        
+        result = np.clip(result, 0, 255)
+        return result
+
+# class SharpeningKernel(Kernel):
+
+#     def __init__(self, size):
+        
+
+# class StrongSharpeningKernel(Kernel):
+
+#     def __init__(self, size):
+#         pass
+
+class MeanKernel(Kernel):
+
+    def __init__(self, size):
+        self.kernel = np.ones((size, size))
+        self.kernel = self.kernel / np.sum(self.kernel)
+
+class GaussianBlurKernel(Kernel):
+
+    def __init__(self, size):
+        self.kernel = np.fromfunction(
+            lambda x, y: (1/ (2 * np.pi * size **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * size ** 2)),
+            (size, size)
+        )
+        self.kernel = self.kernel / np.sum(self.kernel)
