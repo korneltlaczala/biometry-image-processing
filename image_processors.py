@@ -213,6 +213,9 @@ class MeanFilterProcessor(Processor):
 
     def _process(self, img_arr):
         img_arr = np.array(img_arr, dtype=np.int16)
+        kernel = MeanKernel(self.size)
+
+        img_arr = kernel.convolute(img_arr)
 
         return super()._process(img_arr)
     
@@ -229,7 +232,7 @@ class GaussianFilterProcessor(Processor):
 
     def _process(self, img_arr):
         img_arr = np.array(img_arr, dtype=np.int16)
-
+        
 
         return super()._process(img_arr)
     @property
