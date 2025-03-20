@@ -65,7 +65,54 @@ def compute_histogram(img):
     plt.title('Image Histogram')
     plt.grid()
     return plt
-   
+
+def horizontal_projection(img):
+    img_arr = np.array(img)
+    if len(img_arr.shape) == 3:
+        img_arr = convert_to_grayscale(img_arr)
+        img_arr = np.array(img_arr)
+     
+    w = len(img_arr[0])
+    h = len(img_arr)
+    projection = np.zeros(h)
+    for i in range(h):
+        for j in range(w):
+            projection[i] += img_arr[i, j]
+    return projection
+
+def vertical_projection(img):
+    
+    img_arr = np.array(img)
+
+    if len(img_arr.shape) == 3:
+        img_arr = convert_to_grayscale(img_arr)
+        img_arr = np.array(img_arr)
+    
+    w = len(img_arr[0])
+    h = len(img_arr)
+    projection = np.zeros(w)
+
+    for j in range(w):
+        for i in range(h):
+            projection[j] += img_arr[i, j]
+    return projection
+
+def plot_projection(projection, orientation):
+    plt.figure()
+    
+    if orientation == 'Horizontal':
+        plt.plot(projection, range(len(projection)))
+        plt.ylabel('Row Index')
+        plt.xlabel('Pixel Value')
+        plt.gca().invert_yaxis()
+    else:
+        plt.plot(range(len(projection)), projection)
+        plt.ylabel('Pixel Value')
+        plt.xlabel('Column Index')
+    plt.title(f'{orientation} Projection')
+    plt.grid()
+    return plt
+
 
 # filtry
 

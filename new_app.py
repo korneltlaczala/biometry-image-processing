@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from image_processors import *
-from image_operations import compute_histogram
+from image_operations import compute_histogram, horizontal_projection, vertical_projection, plot_projection
 
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
@@ -101,4 +101,21 @@ if uploaded_file is not None:
         with col2:
             st.subheader("Modified Image")
             plt = compute_histogram(img_processed)
+            st.pyplot(plt)
+    
+    st.sidebar.subheader("Projection")
+    show_projection = st.sidebar.checkbox("Show projections")
+
+    if show_projection:
+        st.subheader("Projections of Modified Image")
+        col1, col2 = st.columns(2)
+        with col1:
+            #st.subheader("Horizontal Projection")
+            projection = horizontal_projection(img_processed)
+            plt = plot_projection(projection, 'Horizontal')
+            st.pyplot(plt)
+        with col2:
+            #st.subheader("Vertical Projection")
+            projection = vertical_projection(img_processed)
+            plt = plot_projection(projection, 'Vertical')
             st.pyplot(plt)

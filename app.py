@@ -5,6 +5,7 @@ from image_operations import convert_to_grayscale
 from image_operations import negative
 from image_operations import adjust_brightness, adjust_exposure, adjust_contrast, adjust_gamma, binarize, compute_histogram
 from image_operations import mean_filter, mean_filter, gaussian_filter, sharpen_filter
+from image_operations import horizontal_projection, vertical_projection, plot_projection
 # from image_operations import convert_image_to_bytes
 
 def show_image(image, title="image"):
@@ -91,3 +92,15 @@ if uploaded_file is not None:
             st.subheader("Modified Image")
             plt = compute_histogram(result)
             st.pyplot(plt)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Horizontal Projection")
+        projection = horizontal_projection(result)
+        plt = plot_projection(projection, 'Horizontal')
+        st.pyplot(plt)
+    with col2:
+        st.subheader("Vertical Projection")
+        projection = vertical_projection(result)
+        plt = plot_projection(projection, 'Vertical')
+        st.pyplot(plt)
