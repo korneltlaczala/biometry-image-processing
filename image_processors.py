@@ -9,6 +9,8 @@ class ProcessorFlow:
         self.processors.append(processor)
 
     def process(self, img):
+        print("-" * 20)
+        print("Processing image...")
         changed_params = False
         for processor in self.processors:
             if processor.changed_params:
@@ -17,6 +19,8 @@ class ProcessorFlow:
                 img = processor.get_last_img()
                 continue
             img = processor.process(img)
+        print("Processing finished")
+        print("-" * 20)
         return img
 
     def reset_cache(self):
@@ -30,6 +34,7 @@ class Processor:
         self.last_img = None
 
     def process(self, img):
+        print(f"calculating image for: {self.__class__.__name__}")
         self.changed_params = False
         img_arr = np.array(img)
         img_arr = self._process(img_arr)
@@ -49,6 +54,7 @@ class Processor:
         setattr(self, param_name, value)
 
     def get_last_img(self):
+        print(f"Using cached image for: {self.__class__.__name__}")
         return self.last_img
 
 
