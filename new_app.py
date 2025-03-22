@@ -61,8 +61,9 @@ if uploaded_file is not None:
     gamma_factor = st.sidebar.slider("Gamma", 0.1, 3.0, gamma_processor.default_factor)
     grayscale = st.sidebar.checkbox("Grayscale", value=grayscale_processor.default_is_enabled)
     negative = st.sidebar.checkbox("Negative", value=negative_processor.default_is_enabled)
-    binarization = st.sidebar.checkbox("Binarization", value=binarization_processor.default_is_enabled)
-    binarization_threshold = st.sidebar.slider("Binarization Threshold", 0, 255, binarization_processor.default_threshold)
+    binarization_enabled = st.sidebar.checkbox("Binarization", value=binarization_processor.default_is_enabled)
+    if binarization_enabled:
+        binarization_threshold = st.sidebar.slider("Binarization Threshold", 0, 255, binarization_processor.default_threshold)
     mean_filter_kernel_size = st.sidebar.slider("Mean Filter Kernel Size", 3, 15, mean_filter_processor.default_size, step=2)
 
     exposure_processor.set_param("_factor", exposure_factor)
@@ -71,8 +72,9 @@ if uploaded_file is not None:
     gamma_processor.set_param("_factor", gamma_factor)
     grayscale_processor.set_param("_is_enabled", grayscale)
     negative_processor.set_param("_is_enabled", negative)
-    binarization_processor.set_param("_is_enabled", binarization)
-    binarization_processor.set_param("_threshold", binarization_threshold)
+    binarization_processor.set_param("_is_enabled", binarization_enabled)
+    if binarization_enabled:
+        binarization_processor.set_param("_threshold", binarization_threshold)
     mean_filter_processor.set_param("_size", mean_filter_kernel_size)
 
     img_processed = processor_flow.process(img)
