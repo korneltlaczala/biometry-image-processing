@@ -22,6 +22,12 @@ def reset():
     st.session_state.processor_flow.reset()
     st.session_state["exposure_factor"] = st.session_state.exposure_processor.default_factor
     st.session_state["brightness_value"] = st.session_state.brightness_processor.default_value
+    st.session_state["contrast_factor"] = st.session_state.contrast_processor.default_factor
+    st.session_state["gamma_factor"] = st.session_state.gamma_processor.default_factor
+    st.session_state["grayscale"] = st.session_state.grayscale_processor.default_is_enabled
+    st.session_state["negative"] = st.session_state.negative_processor.default_is_enabled
+    st.session_state["binarization"] = st.session_state.binarization_processor.default_is_enabled
+    st.session_state.filter_choice = "None"
 
 st.title("Image Processing App")
 
@@ -88,7 +94,7 @@ if uploaded_file is not None:
     sharpening_filter_processor = st.session_state.sharpening_filter_processor
 
     def apply_filter(chosen_filter):
-        
+
         if "chosen_filter" not in st.session_state:
             st.session_state.chosen_filter = "None"
 
@@ -171,20 +177,28 @@ if uploaded_file is not None:
     try:
         exposure_processor.set_param("_factor", st.session_state.exposure_factor)
         brightness_processor.set_param("_value", st.session_state.brightness_value)
+        contrast_processor.set_param("_factor", st.session_state.contrast_factor)
+        gamma_processor.set_param("_factor", st.session_state.gamma_factor)
+        grayscale_processor.set_param("_is_enabled", st.session_state.grayscale)
+        negative_processor.set_param("_is_enabled", st.session_state.negative)
+        binarization_processor.set_param("_is_enabled", st.session_state.binarization)
+        if st.session_state.binarization:
+            binarization_processor.set_param("_threshold", st.session_state.binarization_threshold)
     except:
         pass
+
     st.sidebar.slider("Exposure", 0.1, 3.0, value=exposure_processor.factor, key="exposure_factor")
     st.sidebar.slider("Brightness", -255, 255, value=brightness_processor.value, key="brightness_value")
-    # st.sidebar.slider("Contrast", 0.1, 3.0, value=contrast_processor.factor, key="contrast_factor")
-    # st.sidebar.slider("Gamma", 0.1, 3.0, value=gamma_processor.factor, key="gamma_factor")
-    # st.sidebar.checkbox("Grayscale", value=grayscale_processor.is_enabled, key="grayscale")
-    # st.sidebar.checkbox("Negative", value=negative_processor.is_enabled, key="negative")
-    # st.sidebar.checkbox("Binarization", value=binarization_processor.is_enabled, key="binarization")
-    # if binarization_processor.is_enabled:
-    #     st.sidebar.slider("Binarization Threshold", 0, 255, value=binarization_processor.threshold, key="binarization_threshold")
-    # options = ["None", "Gaussian", "Mean", "Sharpening"]
-    # st.sidebar.radio("Filter", options, index=0, key="chosen_filter")
-    # apply_filter(st.session_state.chosen_filter)
+    st.sidebar.slider("Contrast", 0.1, 3.0, value=contrast_processor.factor, key="contrast_factor")
+    st.sidebar.slider("Gamma", 0.1, 3.0, value=gamma_processor.factor, key="gamma_factor")
+    st.sidebar.checkbox("Grayscale", value=grayscale_processor.is_enabled, key="grayscale")
+    st.sidebar.checkbox("Negative", value=negative_processor.is_enabled, key="negative")
+    st.sidebar.checkbox("Binarization", value=binarization_processor.is_enabled, key="binarization")
+    if binarization_processor.is_enabled:
+        st.sidebar.slider("Binarization Threshold", 0, 255, value=binarization_processor.threshold, key="binarization_threshold")
+    options = ["None", "Gaussian", "Mean", "Sharpening"]
+    st.sidebar.radio("Filter", options, index=0, key="filter_choice")
+    apply_filter(st.session_state.filter_choice)
 
     img_processed = processor_flow.process(img)
 
