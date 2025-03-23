@@ -314,15 +314,31 @@ class GaussianFilterProcessor(FilterProcessor):
 
 class SharpeningFilterProcessor(FilterProcessor):
 
+    def __init__(self):
+        super().__init__()
+        self.default_strength = 0.1
+        self._strength = self.default_strength
+        self.default_type = "basic"
+        self._type = self.default_type
+
     def _process(self, img_arr):
         if not self._is_enabled:
             return img_arr
 
-        # kernel = SharpeningKernel(self.size)
-        kernel = StrongSharpeningKernel(self.size)
+        if self.type == "basic":
+            kernel = SharpeningKernel(self.size, self.strength)
+        elif self.type == "strong":
+            kernel = StrongSharpeningKernel(self.size, self.strength)
         img_arr = kernel.convolute(img_arr)
         return img_arr
     
+    @property
+    def strength(self):
+        return self._strength
+    
+    @property
+    def type(self):
+        return self._type
 
 class Kernel():
 
@@ -373,26 +389,25 @@ class GaussianBlurKernel(Kernel):
         self.kernel = self.kernel / np.sum(self.kernel)
 
 class SharpeningKernel(Kernel):
-    def __init__(self, size):
+    def __init__(self, size, strength):
         mid = size // 2
         self.kernel = np.zeros((size, size))
         for i in range(size):
             for j in range(size):
                 dist = abs(i - mid) + abs(j - mid)
-                self.kernel[i, j] = min(0, dist - mid - 1)
+                self.kernel[i, j] = min(0, dist - mid - 1) * strength / mid
         
         self.kernel[mid, mid] = 0
         self.kernel[mid, mid] = -np.sum(self.kernel) + 1
 
 class StrongSharpeningKernel(Kernel):
-    def __init__(self, size):
+    def __init__(self, size, strength):
         mid = size // 2
         self.kernel = np.zeros((size, size))
         for i in range(size):
             for j in range(size):
                 dist = max(abs(i - mid), abs(j - mid))
-                print(f"dist: {dist}")
-                self.kernel[i, j] = min(0, dist - mid - 1)
+                self.kernel[i, j] = min(0, dist - mid - 1) * strength / mid
         
         self.kernel[mid, mid] = 0
         self.kernel[mid, mid] = -np.sum(self.kernel) + 1

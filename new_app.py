@@ -99,7 +99,13 @@ if uploaded_file is not None:
                 st.sidebar.slider("Size", 3, 15, value=mean_filter_processor.size, step=2, key=chosen_filter+"_size")
             elif chosen_filter == "Sharpening":
                 sharpening_filter_processor.set_param("_is_enabled", True)
+                if sharpening_filter_processor.type == "basic":
+                    index = 0
+                else:
+                    index = 1
                 st.sidebar.slider("Size", 3, 15, value=sharpening_filter_processor.size, step=2, key=chosen_filter+"_size")
+                st.sidebar.slider("Strength", 0.01, 2.0, value=sharpening_filter_processor.strength, key=chosen_filter+"_strength")
+                st.sidebar.radio("Type", ["basic", "strong"], horizontal=True, index = index, key=chosen_filter+"_type")
 
             st.session_state.chosen_filter = chosen_filter
             
@@ -114,11 +120,23 @@ if uploaded_file is not None:
                 mean_filter_processor.set_param("_size", size)
 
             elif chosen_filter == "Sharpening":
+                strength = st.session_state[chosen_filter+"_strength"]
+                type = st.session_state[chosen_filter+"_type"].lower()
                 sharpening_filter_processor.set_param("_size", size)
+                sharpening_filter_processor.set_param("_strength", strength)
+                sharpening_filter_processor.set_param("_type", type)
+
 
             st.sidebar.slider("Size", 3, 15, value=size, step=2, key=chosen_filter+"_size")
             if chosen_filter == "Gaussian":
                 st.sidebar.slider("Sigma", 0.1, 5.0, value=sigma, key=chosen_filter+"_sigma")
+            if chosen_filter == "Sharpening":
+                if type == "basic":
+                    index = 0
+                elif type == "strong":
+                    index = 1
+                st.sidebar.slider("Strength", 0.01, 2.0, value=strength, key=chosen_filter+"_strength")
+                st.sidebar.radio("Type", ["basic", "strong"], horizontal=True, index = index, key=chosen_filter+"_type")
 
 
     exposure_factor = st.sidebar.slider("Exposure", 0.1, 3.0, exposure_processor.default_factor)
