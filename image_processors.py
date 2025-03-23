@@ -395,10 +395,17 @@ class SharpeningKernel(Kernel):
         for i in range(size):
             for j in range(size):
                 dist = abs(i - mid) + abs(j - mid)
-                self.kernel[i, j] = min(0, dist - mid - 1) * strength / mid
+                self.kernel[i, j] = min(0, dist - mid - 1)
         
+        desired_sum = 4*strength
         self.kernel[mid, mid] = 0
-        self.kernel[mid, mid] = -np.sum(self.kernel) + 1
+        self.kernel[mid, mid] = -np.sum(self.kernel)
+        scale = desired_sum / self.kernel[mid, mid]
+        print(f"desired sum: {desired_sum}")
+        print(f"scale: {scale}")
+        self.kernel = self.kernel * scale
+        self.kernel[mid, mid] += 1
+        print(self.kernel)
 
 class StrongSharpeningKernel(Kernel):
     def __init__(self, size, strength):
@@ -407,8 +414,12 @@ class StrongSharpeningKernel(Kernel):
         for i in range(size):
             for j in range(size):
                 dist = max(abs(i - mid), abs(j - mid))
-                self.kernel[i, j] = min(0, dist - mid - 1) * strength / mid
+                self.kernel[i, j] = min(0, dist - mid - 1)
         
+        desired_sum = 4*strength
         self.kernel[mid, mid] = 0
-        self.kernel[mid, mid] = -np.sum(self.kernel) + 1
+        self.kernel[mid, mid] = -np.sum(self.kernel)
+        scale = desired_sum / self.kernel[mid, mid]
+        self.kernel = self.kernel * scale
+        self.kernel[mid, mid] += 1
         print(self.kernel)
