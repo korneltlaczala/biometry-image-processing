@@ -36,7 +36,7 @@ class Processor:
     def process(self, img):
         print(f"calculating image for: {self.__class__.__name__}")
         self.changed_params = False
-        img_arr = np.array(img, dtype=np.int16)
+        img_arr = np.array(img, dtype=np.int32)
         img_arr = self._process(img_arr).astype(np.uint8)
         self.last_img = Image.fromarray(img_arr)
         return self.last_img
@@ -318,6 +318,9 @@ class SharpeningFilterProcessor(FilterProcessor):
         if not self._is_enabled:
             return img_arr
 
+        # kernel = SharpeningKernel(self.size)
+        kernel = StrongSharpeningKernel(self.size)
+        img_arr = kernel.convolute(img_arr)
         return img_arr
     
 
@@ -354,27 +357,43 @@ class Kernel():
         result = np.clip(result, 0, 255)
         return result
 
-# class SharpeningKernel(Kernel):
-
-#     def __init__(self, size):
-        
-
-# class StrongSharpeningKernel(Kernel):
-
-#     def __init__(self, size):
-#         pass
 
 class MeanKernel(Kernel):
-
     def __init__(self, size):
         self.kernel = np.ones((size, size))
         self.kernel = self.kernel / np.sum(self.kernel)
 
-class GaussianBlurKernel(Kernel):
 
+class GaussianBlurKernel(Kernel):
     def __init__(self, size, sigma):
         self.kernel = np.fromfunction(
             lambda x, y: (1/ (2 * np.pi * sigma **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * sigma ** 2)),
             (size, size)
         )
         self.kernel = self.kernel / np.sum(self.kernel)
+
+class SharpeningKernel(Kernel):
+    def __init__(self, size):
+        mid = size // 2
+        self.kernel = np.zeros((size, size))
+        for i in range(size):
+            for j in range(size):
+                dist = abs(i - mid) + abs(j - mid)
+                self.kernel[i, j] = min(0, dist - mid - 1)
+        
+        self.kernel[mid, mid] = 0
+        self.kernel[mid, mid] = -np.sum(self.kernel) + 1
+
+class StrongSharpeningKernel(Kernel):
+    def __init__(self, size):
+        mid = size // 2
+        self.kernel = np.zeros((size, size))
+        for i in range(size):
+            for j in range(size):
+                dist = max(abs(i - mid), abs(j - mid))
+                print(f"dist: {dist}")
+                self.kernel[i, j] = min(0, dist - mid - 1)
+        
+        self.kernel[mid, mid] = 0
+        self.kernel[mid, mid] = -np.sum(self.kernel) + 1
+        print(self.kernel)
