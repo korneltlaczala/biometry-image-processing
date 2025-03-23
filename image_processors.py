@@ -36,9 +36,9 @@ class Processor:
     def process(self, img):
         print(f"calculating image for: {self.__class__.__name__}")
         self.changed_params = False
-        img_arr = np.array(img)
-        img_arr = self._process(img_arr)
-        self.last_img = Image.fromarray(img_arr.astype(np.uint8))
+        img_arr = np.array(img, dtype=np.int16)
+        img_arr = self._process(img_arr).astype(np.uint8)
+        self.last_img = Image.fromarray(img_arr)
         return self.last_img
 
     def _process(self, img_arr):
@@ -66,13 +66,10 @@ class BrightnessProcessor(Processor):
         self._value = self.default_value
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
         img_arr = np.clip(img_arr + self._value, 0, 255)
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        img_arr = np.array(img_arr, dtype=np.int16)
-
         if len(img_arr.shape) ==3:
             channels = 3
         else:
@@ -98,12 +95,10 @@ class ExposureProcessor(Processor):
         self._factor = self.default_factor
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
         img_arr = np.clip(img_arr * self._factor, 0, 255)
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        img_arr = np.array(img_arr, dtype=np.int16)
 
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
@@ -123,13 +118,11 @@ class ContrastProcessor(Processor):
         self._factor = self.default_factor
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
         mean = np.mean(img_arr)
         img_arr = np.clip((img_arr - mean) * self._factor + mean, 0, 255)
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        img_arr = np.array(img_arr, dtype=np.int16)
 
         if len(img_arr.shape) == 3:
             channels = 3
@@ -157,13 +150,10 @@ class GammaProcessor(Processor):
         self._factor = self.default_factor
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
         img_arr = np.power(img_arr / 255.0, self._factor) * 255
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        img_arr = np.array(img_arr, dtype=np.int16)
-        
         if len(img_arr.shape) == 3:
             channels = 3
         else:
@@ -195,8 +185,6 @@ class GrayscaleProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
-        
         if len(img_arr.shape) == 3:
             channels = 3
         else:
@@ -227,8 +215,6 @@ class NegativeProcessor(Processor):
         return img_arr
     
     def _process_pixelwise(self, img_arr):  
-        img_arr = np.array(img_arr, dtype=np.int16)
-        
         if len(img_arr.shape) == 3:
             channels = 3
         else:
@@ -258,15 +244,12 @@ class BinarizationProcessor(Processor):
     def _process(self, img_arr):
         if not self._is_enabled:
             return img_arr
-        img_arr = np.array(img_arr, dtype=np.int16)
         img_arr = np.where(img_arr > self._threshold, 255, 0)
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
         if not self._is_enabled:
             return img_arr
-        img_arr = np.array(img_arr, dtype=np.int16)
-        
         if len(img_arr.shape) == 3:
             channels = 3
         else:
@@ -304,7 +287,6 @@ class MeanFilterProcessor(FilterProcessor):
         if not self._is_enabled:
             return img_arr
 
-        img_arr = np.array(img_arr, dtype=np.int16)
         kernel = MeanKernel(self.size)
         img_arr = kernel.convolute(img_arr)
         return img_arr
@@ -321,7 +303,8 @@ class GaussianFilterProcessor(FilterProcessor):
         if not self._is_enabled:
             return img_arr
 
-        img_arr = np.array(img_arr, dtype=np.int16)
+        kernel = GaussianBlurKernel(self.size, self.sigma)
+        img_arr = kernel.convolute(img_arr)
         return img_arr
 
     @property
@@ -335,7 +318,6 @@ class SharpeningFilterProcessor(FilterProcessor):
         if not self._is_enabled:
             return img_arr
 
-        img_arr = np.array(img_arr, dtype=np.int16)
         return img_arr
     
 
@@ -385,9 +367,9 @@ class MeanKernel(Kernel):
 
 class GaussianBlurKernel(Kernel):
 
-    def __init__(self, size):
+    def __init__(self, size, sigma):
         self.kernel = np.fromfunction(
-            lambda x, y: (1/ (2 * np.pi * size **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * size ** 2)),
+            lambda x, y: (1/ (2 * np.pi * sigma **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * sigma ** 2)),
             (size, size)
         )
         self.kernel = self.kernel / np.sum(self.kernel)

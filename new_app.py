@@ -150,6 +150,15 @@ if uploaded_file is not None:
             st.subheader("Modified Image")
             plt = compute_histogram(img_processed)
             st.pyplot(plt)
+        
+        with col1:
+            st.subheader("Original Image")
+            plt = compute_histogram(img, sigma=True)
+            st.pyplot(plt)
+        with col2:
+            st.subheader("Modified Image")
+            plt = compute_histogram(img_processed, sigma=True)
+            st.pyplot(plt)
     
     st.sidebar.subheader("Projection")
     show_projection = st.sidebar.checkbox("Show projections")

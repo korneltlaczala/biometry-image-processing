@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
 import math
 import io
 
@@ -46,7 +47,7 @@ def binarize(img, threshold=128):
     binarized_img = np.where(img_arr < threshold, 0, 255)
     return Image.fromarray(binarized_img.astype(np.uint8))
 
-def compute_histogram(img):
+def compute_histogram(img, sigma=False):
     img_arr = np.array(img)
 
     if len(img_arr.shape) == 2:
@@ -58,7 +59,9 @@ def compute_histogram(img):
     
     plt.figure()
     for data, color in zip(hist_data, colors):
-        hist, bins = np.histogram(data.flatten(), bins=256, range=[0, 256])
+        hist, bins = np.histogram(data.flatten(), bins=256, range=[1, 254])
+        if sigma:
+            hist = gaussian_filter(hist, sigma=3)
         plt.fill_between(bins[:-1], hist, color=color, alpha=0.5)
     plt.xlabel('Pixel Value')
     plt.ylabel('Frequency')
@@ -116,70 +119,70 @@ def plot_projection(projection, orientation):
 
 # filtry
 
-def mean_filter(img, size):
-    img_arr = np.array(img)
+# def mean_filter(img, size):
+#     img_arr = np.array(img)
 
-    kernel = np.ones((size, size)) / (size ** 2)
+#     kernel = np.ones((size, size)) / (size ** 2)
 
-    output = apply_filter(img_arr, kernel)
+#     output = apply_filter(img_arr, kernel)
 
-    return Image.fromarray(output.astype(np.uint8))
+#     return Image.fromarray(output.astype(np.uint8))
 
-def gaussian_filter(img, size, sigma):
+# def gaussian_filter(img, size, sigma):
     
-    kernel = np.fromfunction(
-        lambda x, y: (1/ (2 * np.pi * sigma **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * sigma ** 2)),
-        (size, size)
-    )
-    print(kernel)
-    kernel = kernel / np.sum(kernel)
+#     kernel = np.fromfunction(
+#         lambda x, y: (1/ (2 * np.pi * sigma **2)) * np.exp(-((x - (size - 1)/2)**2 + (y - (size - 1)/2)**2) / (2 * sigma ** 2)),
+#         (size, size)
+#     )
+#     print(kernel)
+#     kernel = kernel / np.sum(kernel)
 
-    img_arr = np.array(img)
+#     img_arr = np.array(img)
 
-    output = apply_filter(img_arr, kernel)
+#     output = apply_filter(img_arr, kernel)
     
-    return Image.fromarray(output.astype(np.uint8))
+#     return Image.fromarray(output.astype(np.uint8))
 
-def sharpen_filter(img):
-    kernel = np.array([
-        [0, -1, 0],
-        [-1, 5, -1],
-        [0, -1, 0]
-    ])
-    kernel = np.array([
-        [-1, -1, -1],
-        [-1, 9, -1],
-        [-1, -1, -1]
-    ])
+# def sharpen_filter(img):
+#     kernel = np.array([
+#         [0, -1, 0],
+#         [-1, 5, -1],
+#         [0, -1, 0]
+#     ])
+#     kernel = np.array([
+#         [-1, -1, -1],
+#         [-1, 9, -1],
+#         [-1, -1, -1]
+#     ])
 
-    img_arr = np.array(img)
-    img_arr = np.array(img_arr, dtype=np.int16)
-    sharpened_img = apply_filter(img_arr, kernel)
+#     img_arr = np.array(img)
+#     img_arr = np.array(img_arr, dtype=np.int16)
+#     sharpened_img = apply_filter(img_arr, kernel)
 
-    return Image.fromarray(sharpened_img.astype(np.uint8))
+#     return Image.fromarray(sharpened_img.astype(np.uint8))
 
-def apply_filter(img, kernel):
-    h, w = img.shape[0], img.shape[1]
-    pad = kernel.shape[0] // 2
+# def apply_filter(img, kernel):
+#     h, w = img.shape[0], img.shape[1]
+#     pad = kernel.shape[0] // 2
 
-    result = np.zeros_like(img)
+#     result = np.zeros_like(img)
 
-    if len(img.shape) == 3:
-        chanels = img.shape[2]
-    else:
-        chanels = 1
-        img = img[:, :, None]
+#     if len(img.shape) == 3:
+#         chanels = img.shape[2]
+#     else:
+#         chanels = 1
+#         img = img[:, :, None]
 
-    img_padded = np.pad(img, ((pad, pad), (pad, pad), (0, 0)), mode='reflect')
+#     img_padded = np.pad(img, ((pad, pad), (pad, pad), (0, 0)), mode='reflect')
     # print(f"Original image shape: {img.shape}")
     # print(f"Padded image shape: {img_padded.shape}")
 
-    for i in range(h):
-        for j in range(w):
-            for c in range(chanels):
-                window = img_padded[i:i + kernel.shape[0], j:j + kernel.shape[0], c]
-                result[i, j, c] = np.sum(window * kernel)
+    # for i in range(h):
+    #     for j in range(w):
+    #         for c in range(chanels):
+    #             window = img_padded[i:i + kernel.shape[0], j:j + kernel.shape[0], c]
+    #             result[i, j, c] = np.sum(window * kernel)
     
-    result = np.clip(result, 0, 255)
-    return result
+    # result = np.clip(result, 0, 255)
+    # return result
 
