@@ -9,8 +9,8 @@ class ProcessorFlow:
         self.processors.append(processor)
 
     def process(self, img):
-        print("-" * 20)
-        print("Processing image...")
+        # print("-" * 20)
+        # print("Processing image...")
         changed_params = False
         for processor in self.processors:
             if processor.changed_params:
@@ -19,13 +19,27 @@ class ProcessorFlow:
                 img = processor.get_last_img()
                 continue
             img = processor.process(img)
-        print("Processing finished")
-        print("-" * 20)
+        # print("Processing finished")
+        # print("-" * 20)
         return img
 
     def reset_cache(self):
         for processor in self.processors:
             processor.changed_params = True
+
+    def reset(self):
+        for processor in self.processors:
+            processor.set_default_params()
+        self.reset_cache()
+
+    def __str__(self):
+        output = "-" * 20 + "\n"
+        output += "ProcessorFlow:\n"
+        output += "-" * 20 + "\n"
+        for processor in self.processors:
+            output += repr(processor) + "\n"
+        output += "-" * 20 + "\n"
+        return output
 
 
 class Processor:
@@ -34,7 +48,7 @@ class Processor:
         self.last_img = None
 
     def process(self, img):
-        print(f"calculating image for: {self.__class__.__name__}")
+        # print(f"calculating image for: {self.__class__.__name__}")
         self.changed_params = False
         img_arr = np.array(img, dtype=np.int32)
         img_arr = self._process(img_arr).astype(np.uint8)
@@ -54,10 +68,12 @@ class Processor:
         setattr(self, param_name, value)
 
     def get_last_img(self):
-        print(f"Using cached image for: {self.__class__.__name__}")
+        # print(f"Using cached image for: {self.__class__.__name__}")
         return self.last_img
 
-
+    def set_default_params(self):
+        raise NotImplementedError
+        
 class BrightnessProcessor(Processor):
 
     def __init__(self):
@@ -86,6 +102,11 @@ class BrightnessProcessor(Processor):
     def value(self):
         return self._value
 
+    def set_default_params(self):
+        self._value = self.default_value
+
+    def __repr__(self):
+        return f"BrightnessProcessor(value={self._value})"
 
 class ExposureProcessor(Processor):
 
@@ -105,9 +126,16 @@ class ExposureProcessor(Processor):
                 for c in range(img_arr.shape[2]):
                     img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor, 0, 255)
         return img_arr
+
     @property
     def factor(self):
         return self._factor
+
+    def set_default_params(self):
+        self._factor = self.default_factor
+
+    def __repr__(self):
+        return f"ExposureProcessor(factor={self._factor})"
 
 
 class ContrastProcessor(Processor):
@@ -140,7 +168,13 @@ class ContrastProcessor(Processor):
     @property
     def factor(self):
         return self._factor
+
+    def set_default_params(self):
+        self._factor = self.default_factor
     
+    def __repr__(self):
+        return f"ContrastProcessor(factor={self._factor})"
+
 
 class GammaProcessor(Processor):
 
@@ -169,6 +203,12 @@ class GammaProcessor(Processor):
     @property
     def factor(self):
         return self._factor
+
+    def set_default_params(self):
+        self._factor = self.default_factor
+    
+    def __repr__(self):
+        return f"GammaProcessor(factor={self._factor})"
 
 
 class GrayscaleProcessor(Processor):
@@ -200,6 +240,12 @@ class GrayscaleProcessor(Processor):
     def is_enabled(self):
         return self._is_enabled
 
+    def set_default_params(self):
+        self._is_enabled = self.default_is_enabled
+
+    def __repr__(self):
+        return f"GrayscaleProcessor(is_enabled={self._is_enabled})"
+
 
 class NegativeProcessor(Processor):
 
@@ -230,6 +276,12 @@ class NegativeProcessor(Processor):
     @property
     def is_enabled(self):
         return self._is_enabled
+
+    def set_default_params(self):
+        self._is_enabled = self.default_is_enabled
+
+    def __repr__(self):
+        return f"NegativeProcessor(is_enabled={self._is_enabled})"
 
 
 class BinarizationProcessor(Processor):
@@ -263,8 +315,19 @@ class BinarizationProcessor(Processor):
         return img_arr
     
     @property
+    def is_enabled(self):
+        return self._is_enabled
+
+    @property
     def threshold(self):
         return self._threshold
+
+    def set_default_params(self):
+        self._is_enabled = self.default_is_enabled
+        self._threshold = self.default_threshold
+
+    def __repr__(self):
+        return f"BinarizationProcessor(is_enabled={self._is_enabled}, threshold={self._threshold})"
 
 
 class FilterProcessor(Processor):
@@ -280,6 +343,13 @@ class FilterProcessor(Processor):
     def size(self):
         return self._size
 
+    def set_default_params(self):
+        self._is_enabled = self.default_is_enabled
+        self._size = self.default_size
+
+    def __repr__(self):
+        return f"FilterProcessor(is_enabled={self._is_enabled}, size={self._size})"
+
 
 class MeanFilterProcessor(FilterProcessor):
 
@@ -290,7 +360,10 @@ class MeanFilterProcessor(FilterProcessor):
         kernel = MeanKernel(self.size)
         img_arr = kernel.convolute(img_arr)
         return img_arr
-    
+
+    def __repr__(self):
+        return f"MeanFilterProcessor(is_enabled={self._is_enabled}, size={self._size})"
+
 
 class GaussianFilterProcessor(FilterProcessor):
 
@@ -310,6 +383,13 @@ class GaussianFilterProcessor(FilterProcessor):
     @property
     def sigma(self):
         return self._sigma
+
+    def set_default_params(self):
+        super().set_default_params()
+        self._sigma = self.default_sigma
+
+    def __repr__(self):
+        return f"GaussianFilterProcessor(is_enabled={self._is_enabled}, size={self._size}, sigma={self._sigma})"
 
 
 class SharpeningFilterProcessor(FilterProcessor):
@@ -339,6 +419,14 @@ class SharpeningFilterProcessor(FilterProcessor):
     @property
     def type(self):
         return self._type
+
+    def set_default_params(self):
+        super().set_default_params()
+        self._strength = self.default_strength
+        self._type = self.default_type
+
+    def __repr__(self):
+        return f"SharpeningFilterProcessor(is_enabled={self._is_enabled}, size={self._size}, strength={self._strength}, type={self._type})"
 
 class Kernel():
 
