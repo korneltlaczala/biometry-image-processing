@@ -263,6 +263,8 @@ class BinarizationProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
+        if not self._is_enabled:
+            return img_arr
         img_arr = np.array(img_arr, dtype=np.int16)
         
         if len(img_arr.shape) == 3:
@@ -282,56 +284,60 @@ class BinarizationProcessor(Processor):
         return self._threshold
 
 
-class MeanFilterProcessor(Processor):
+class FilterProcessor(Processor):
 
     def __init__(self):
         super().__init__()
+        self.default_is_enabled = False
+        self._is_enabled = self.default_is_enabled
         self.default_size = 3
         self._size = self.default_size
 
+    @property
+    def size(self):
+        return self._size
+
+
+class MeanFilterProcessor(FilterProcessor):
+
     def _process(self, img_arr):
+        if not self._is_enabled:
+            return img_arr
+
         img_arr = np.array(img_arr, dtype=np.int16)
         kernel = MeanKernel(self.size)
-
         img_arr = kernel.convolute(img_arr)
-
         return img_arr
     
-    @property
-    def size(self):
-        return self._size
 
-class GaussianFilterProcessor(Processor):
+class GaussianFilterProcessor(FilterProcessor):
 
     def __init__(self):
         super().__init__()
-        self.default_size = 3
-        self._size = self.default_size
+        self.default_sigma = 1.0
+        self._sigma = self.default_sigma
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
-        
+        if not self._is_enabled:
+            return img_arr
 
+        img_arr = np.array(img_arr, dtype=np.int16)
         return img_arr
+
     @property
-    def size(self):
-        return self._size
+    def sigma(self):
+        return self._sigma
 
-class SharpeningFilterProcessor(Processor):
 
-    def __init__(self):
-        super().__init__
-        self.default_size = 3
-        self._size = self.default_size
+class SharpeningFilterProcessor(FilterProcessor):
 
     def _process(self, img_arr):
-        img_arr = np.array(img_arr, dtype=np.int16)
+        if not self._is_enabled:
+            return img_arr
 
+        img_arr = np.array(img_arr, dtype=np.int16)
         return img_arr
     
-    @property
-    def size(self):
-        return self._size
 
 class Kernel():
 

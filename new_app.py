@@ -18,7 +18,9 @@ if "processor_flow" not in st.session_state:
     st.session_state.grayscale_processor = GrayscaleProcessor()
     st.session_state.negative_processor = NegativeProcessor()
     st.session_state.binarization_processor = BinarizationProcessor()
-    st.session_state.filter_processor = MeanFilterProcessor()
+    st.session_state.mean_filter_processor = MeanFilterProcessor()
+    st.session_state.gaussian_filter_processor = GaussianFilterProcessor()
+    st.session_state.sharpening_filter_processor = SharpeningFilterProcessor()
 
     st.session_state.processor_flow.add_processor(st.session_state.brightness_processor)
     st.session_state.processor_flow.add_processor(st.session_state.exposure_processor)
@@ -27,7 +29,9 @@ if "processor_flow" not in st.session_state:
     st.session_state.processor_flow.add_processor(st.session_state.grayscale_processor)
     st.session_state.processor_flow.add_processor(st.session_state.negative_processor)
     st.session_state.processor_flow.add_processor(st.session_state.binarization_processor)
-    st.session_state.processor_flow.add_processor(st.session_state.filter_processor)
+    st.session_state.processor_flow.add_processor(st.session_state.mean_filter_processor)
+    st.session_state.processor_flow.add_processor(st.session_state.gaussian_filter_processor)
+    st.session_state.processor_flow.add_processor(st.session_state.sharpening_filter_processor)
     
 uploaded_file = st.file_uploader("Choose file", type=["jpg", "png", "jpeg"])
 try:
@@ -52,7 +56,48 @@ if uploaded_file is not None:
     grayscale_processor = st.session_state.grayscale_processor
     negative_processor = st.session_state.negative_processor
     binarization_processor = st.session_state.binarization_processor
-    filter_processor = st.session_state.filter_processor
+    mean_filter_processor = st.session_state.mean_filter_processor
+    gaussian_filter_processor = st.session_state.gaussian_filter_processor
+    sharpening_filter_processor = st.session_state.sharpening_filter_processor
+
+    def apply_filter(chosen_filter):
+        
+        if "chosen_filter" not in st.session_state:
+            st.session_state.chosen_filter = "None"
+
+        if st.session_state.chosen_filter != chosen_filter:
+            gaussian_filter_processor.set_param("_is_enabled", False)
+            mean_filter_processor.set_param("_is_enabled", False)
+            sharpening_filter_processor.set_param("_is_enabled", False)
+            if chosen_filter == "Gaussian":
+                gaussian_filter_processor.set_param("_is_enabled", True)
+                st.sidebar.slider("Size", 3, 15, value=gaussian_filter_processor.size, step=2, key=chosen_filter+"_size")
+                st.sidebar.slider("Sigma", 0.1, 5.0, value=gaussian_filter_processor.sigma, key=chosen_filter+"_sigma")
+            elif chosen_filter == "Mean":            
+                mean_filter_processor.set_param("_is_enabled", True)
+                st.sidebar.slider("Size", 3, 15, value=mean_filter_processor.size, step=2, key=chosen_filter+"_size")
+            elif chosen_filter == "Sharpening":
+                sharpening_filter_processor.set_param("_is_enabled", True)
+                st.sidebar.slider("Size", 3, 15, value=sharpening_filter_processor.size, step=2, key=chosen_filter+"_size")
+
+            st.session_state.chosen_filter = chosen_filter
+            
+        elif chosen_filter != "None":
+            size = st.session_state[chosen_filter+"_size"]
+            if chosen_filter == "Gaussian":
+                sigma = st.session_state[chosen_filter+"_sigma"]
+                gaussian_filter_processor.set_param("_size", size)
+                gaussian_filter_processor.set_param("_sigma", sigma)
+
+            elif chosen_filter == "Mean":
+                mean_filter_processor.set_param("_size", size)
+
+            elif chosen_filter == "Sharpening":
+                sharpening_filter_processor.set_param("_size", size)
+
+            st.sidebar.slider("Size", 3, 15, value=size, step=2, key=chosen_filter+"_size")
+            if chosen_filter == "Gaussian":
+                st.sidebar.slider("Sigma", 0.1, 5.0, value=sigma, key=chosen_filter+"_sigma")
 
 
     exposure_factor = st.sidebar.slider("Exposure", 0.1, 3.0, exposure_processor.default_factor)
@@ -66,7 +111,6 @@ if uploaded_file is not None:
         binarization_threshold = st.sidebar.slider("Binarization Threshold", 0, 255, binarization_processor.default_threshold)
     options = ["None", "Gaussian", "Mean", "Sharpening"]
     chosen_filter = st.sidebar.radio("Filter", options, index=0)
-    mean_filter_kernel_size = st.sidebar.slider("Mean Filter Kernel Size", 3, 15, filter_processor.default_size, step=2)
 
     exposure_processor.set_param("_factor", exposure_factor)
     brightness_processor.set_param("_value", brightness_value)
@@ -77,7 +121,7 @@ if uploaded_file is not None:
     binarization_processor.set_param("_is_enabled", binarization_enabled)
     if binarization_enabled:
         binarization_processor.set_param("_threshold", binarization_threshold)
-    filter_processor.set_param("_size", mean_filter_kernel_size)
+    apply_filter(chosen_filter)
 
     img_processed = processor_flow.process(img)
 
