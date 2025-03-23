@@ -334,14 +334,19 @@ class Kernel():
 
         if len(img_arr.shape) == 3:
             chanels = img_arr.shape[2]
+            grayscale = False
+            img_padded = np.pad(img_arr, ((pad, pad), (pad, pad), (0, 0)), mode='reflect')
         else:
-            chanels = 1
-            img_arr = img_arr[:, :, None]
+            grayscale = True
+            img_padded = np.pad(img_arr, ((pad, pad), (pad, pad)), mode='reflect')
 
-        img_padded = np.pad(img_arr, ((pad, pad), (pad, pad), (0, 0)), mode='reflect')
 
         for i in range(h):
             for j in range(w):
+                if grayscale:
+                    window = img_padded[i:i + self.kernel.shape[0], j:j + self.kernel.shape[0]]
+                    result[i, j] = np.sum(window * self.kernel)
+                    continue
                 for c in range(chanels):
                     window = img_padded[i:i + self.kernel.shape[0], j:j + self.kernel.shape[0], c]
                     result[i, j, c] = np.sum(window * self.kernel)

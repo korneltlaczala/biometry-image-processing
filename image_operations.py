@@ -60,6 +60,7 @@ def compute_histogram(img, sigma=False):
     plt.figure()
     for data, color in zip(hist_data, colors):
         hist, bins = np.histogram(data.flatten(), bins=256, range=[1, 254])
+        # hist, bins = np.histogram(data.flatten(), bins=256, range=[0, 255])
         if sigma:
             hist = gaussian_filter(hist, sigma=3)
         plt.fill_between(bins[:-1], hist, color=color, alpha=0.5)
