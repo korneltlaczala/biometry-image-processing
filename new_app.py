@@ -7,6 +7,17 @@ from image_operations import compute_histogram, horizontal_projection, vertical_
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
 
+def downscale_image(img):
+    max_dim = 256
+    # max_dim = 512
+    if img.width < max_dim and img.height < max_dim:
+        return img
+    if img.width > img.height:
+        scale = max_dim / img.width
+    else:
+        scale = max_dim / img.height
+    return img.resize((int(img.width * scale), int(img.height * scale)))
+
 st.title("Image Processing App")
 
 if "processor_flow" not in st.session_state:
@@ -34,17 +45,27 @@ if "processor_flow" not in st.session_state:
     st.session_state.processor_flow.add_processor(st.session_state.sharpening_filter_processor)
     
 uploaded_file = st.file_uploader("Choose file", type=["jpg", "png", "jpeg"])
+downscale = st.checkbox("Downscale", value=True)
 try:
     if st.session_state.uploaded_file != uploaded_file:
+        st.session_state.processor_flow.reset_cache()
+    elif st.session_state.downscale != downscale:
         st.session_state.processor_flow.reset_cache()
 except:
     pass
 st.session_state.uploaded_file = uploaded_file
+st.session_state.downscale = downscale
+
 
 if uploaded_file is not None:
 
-    img = Image.open(uploaded_file)
 
+    img = Image.open(uploaded_file)
+    if downscale:
+        img = downscale_image(img)
+
+    im_ar = np.array(img, dtype=np.int16)
+    st.write(f"Image size: {im_ar.shape}")
     st.sidebar.title("Image Operations")
     st.sidebar.subheader("Pixel Operations")
 
@@ -142,14 +163,14 @@ if uploaded_file is not None:
 
     if show_histogram:
         col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Original Image")
-            plt = compute_histogram(img)
-            st.pyplot(plt)
-        with col2:
-            st.subheader("Modified Image")
-            plt = compute_histogram(img_processed)
-            st.pyplot(plt)
+        # with col1:
+        #     st.subheader("Original Image")
+        #     plt = compute_histogram(img)
+        #     st.pyplot(plt)
+        # with col2:
+        #     st.subheader("Modified Image")
+        #     plt = compute_histogram(img_processed)
+        #     st.pyplot(plt)
         
         with col1:
             st.subheader("Original Image")
