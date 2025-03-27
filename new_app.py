@@ -9,7 +9,7 @@ def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
 
 def downscale_image(img):
-    max_dim = 256
+    max_dim = 1000
     # max_dim = 512
     if img.width < max_dim and img.height < max_dim:
         return img
@@ -191,25 +191,26 @@ if uploaded_file is not None:
         show_image(img_processed, title="Modified Image")
 
     st.sidebar.subheader("Edge detection")
-    show_roberts = st.sidebar.checkbox("Roebrts cross")
+    show_roberts = st.sidebar.checkbox("Roberts cross")
     show_sobel = st.sidebar.checkbox("Sobel operator")
+    edge_detection_threshold = st.sidebar.slider("Threshold", 0, 255, 100, key="edge_detection_threshold")
 
     if show_roberts:
         col1, col2 = st.columns(2)
         with col1:
-            roberts_original = compute_roberts(img)
+            roberts_original = compute_roberts(img, edge_detection_threshold)
             show_image(roberts_original, title="Roberts cross of Original Image")
         with col2:
-            roberts_processed = compute_roberts(img_processed)
+            roberts_processed = compute_roberts(img_processed, edge_detection_threshold)
             show_image(roberts_processed, title="Roberts cross of Modified Image")
 
     if show_sobel:
         col1, col2 = st.columns(2)
         with col1:
-            sobel_original = compute_sobel(img)
+            sobel_original = compute_sobel(img, edge_detection_threshold)
             show_image(sobel_original, title="Sobel operator of Original Image")
         with col2:
-            sobel_proocessed = compute_sobel(img_processed)
+            sobel_proocessed = compute_sobel(img_processed, edge_detection_threshold)
             show_image(sobel_proocessed, title="Sobel operator of Modified Image")
 
         

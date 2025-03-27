@@ -6,12 +6,17 @@ import math
 import io
 from image_processors import GrayscaleProcessor, XRobertsCrossKernel, YRobertsCrossKernel, XSobelOperatorKernel, YSobelOperatorKernel
 
+def apply_threshold(img_arr, threshold):
+    img_arr[img_arr < threshold] = 0
+    img_arr[img_arr >= threshold] = 255
+    return img_arr
+
 def convert_to_grayscale(img):
     grayscale_processor = GrayscaleProcessor()
     grayscale_processor.set_param("_is_enabled", True)
     return grayscale_processor.process(img)
 
-def compute_edge_detection(img, method):
+def compute_edge_detection(img, method, threshold=100):
     grayscale_img = convert_to_grayscale(img)
     img_arr = np.array(grayscale_img, dtype=np.int32)
     if method == "roberts":
@@ -24,15 +29,17 @@ def compute_edge_detection(img, method):
     Gy = YKernel.convolute(img_arr)
 
     magnitude = np.sqrt(Gx**2 + Gy**2)
-    magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
+    magnitude = magnitude / np.max(magnitude) * 255
+    # magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
+    magnitude = apply_threshold(magnitude, threshold)
     processed_img = Image.fromarray(magnitude.astype(np.uint8))
     return processed_img
 
-def compute_roberts(img):
-    return compute_edge_detection(img, "roberts")
+def compute_roberts(img, threshold):
+    return compute_edge_detection(img, "roberts", threshold)
 
-def compute_sobel(img):
-    return compute_edge_detection(img, "sobel")
+def compute_sobel(img, threshold):
+    return compute_edge_detection(img, "sobel", threshold)
 
 def compute_histogram(img, sigma=False):
     img_arr = np.array(img)
