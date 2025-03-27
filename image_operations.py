@@ -4,9 +4,16 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 import math
 import io
+from image_processors import GrayscaleProcessor
+
+def convert_to_grayscale(img):
+    grayscale_processor = GrayscaleProcessor()
+    grayscale_processor.set_param("_is_enabled", True)
+    return grayscale_processor.process(img)
 
 def compute_roberts(img):
-    return img
+    grayscale_img = convert_to_grayscale(img)
+    return grayscale_img
 
 def compute_sobel(img):
     return img

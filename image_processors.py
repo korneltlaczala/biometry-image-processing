@@ -206,8 +206,7 @@ class GammaProcessor(Processor):
 
 
 class GrayscaleProcessor(Processor):
-
-    def __init__(self,):
+    def __init__(self):
         super().__init__()
         self.default_is_enabled = False
         self._is_enabled = self.default_is_enabled
@@ -215,7 +214,7 @@ class GrayscaleProcessor(Processor):
     def _process(self, img_arr):
         if not self._is_enabled:
             return img_arr
-        img_arr = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])  
+        img_arr = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])
         return img_arr
 
     def _process_pixelwise(self, img_arr):
@@ -501,3 +500,11 @@ class StrongSharpeningKernel(Kernel):
         scale = desired_sum / self.kernel[mid, mid]
         self.kernel = self.kernel * scale
         self.kernel[mid, mid] += 1
+
+class XRobertsCrossKernel(Kernel):
+    def __init__(self):
+        self.kernel = np.array([[1, 0], [0, -1]])
+
+class YRobertsCrossKernel(Kernel):
+    def __init__(self):
+        self.kernel = np.array([[0, 1], [-1, 0]])
