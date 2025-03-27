@@ -8,9 +8,7 @@ from image_operations import compute_roberts, compute_sobel
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
 
-def downscale_image(img):
-    max_dim = 1000
-    # max_dim = 512
+def downscale_image(img, max_dim=512):
     if img.width < max_dim and img.height < max_dim:
         return img
     if img.width > img.height:
@@ -74,7 +72,14 @@ if uploaded_file is not None:
 
     img = Image.open(uploaded_file)
     if downscale:
-        img = downscale_image(img)
+        max_dim = st.number_input("Max dimension", min_value=8, max_value=2048, value=512)
+        try:
+            if st.session_state.max_dim != max_dim:
+                st.session_state.processor_flow.reset_cache()
+        except:
+            pass
+        st.session_state.max_dim = max_dim
+        img = downscale_image(img, max_dim)
 
     im_ar = np.array(img, dtype=np.int16)
     st.write(f"Image size: {im_ar.shape}")
