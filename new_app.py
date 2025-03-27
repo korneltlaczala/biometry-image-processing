@@ -3,6 +3,7 @@ from PIL import Image
 import numpy as np
 from image_processors import *
 from image_operations import compute_histogram, horizontal_projection, vertical_projection, plot_projection
+from image_operations import compute_roberts, compute_sobel
 
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
@@ -189,6 +190,28 @@ if uploaded_file is not None:
         st.subheader("Modified Image")
         show_image(img_processed, title="Modified Image")
 
+    st.sidebar.subheader("Edge detection")
+    show_roberts = st.sidebar.checkbox("Roebrts cross")
+    show_sobel = st.sidebar.checkbox("Sobel operator")
+
+    if show_roberts:
+        col1, col2 = st.columns(2)
+        with col1:
+            roberts_original = compute_roberts(img)
+            show_image(roberts_original, title="Roberts cross of Original Image")
+        with col2:
+            roberts_processed = compute_roberts(img_processed)
+            show_image(roberts_processed, title="Roberts cross of Modified Image")
+
+    if show_sobel:
+        col1, col2 = st.columns(2)
+        with col1:
+            sobel_original = compute_sobel(img)
+            show_image(sobel_original, title="Sobel operator of Original Image")
+        with col2:
+            sobel_proocessed = compute_sobel(img_processed)
+            show_image(sobel_proocessed, title="Sobel operator of Modified Image")
+
         
     st.sidebar.subheader("Histogram")
     show_histogram = st.sidebar.checkbox("Show histograms")
@@ -197,11 +220,9 @@ if uploaded_file is not None:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Original Image")
             plt = compute_histogram(img, sigma=True)
             st.pyplot(plt)
         with col2:
-            st.subheader("Modified Image")
             plt = compute_histogram(img_processed, sigma=True)
             st.pyplot(plt)
     

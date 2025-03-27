@@ -47,6 +47,12 @@ def binarize(img, threshold=128):
     binarized_img = np.where(img_arr < threshold, 0, 255)
     return Image.fromarray(binarized_img.astype(np.uint8))
 
+def compute_roberts(img):
+    return img
+
+def compute_sobel(img):
+    return img
+
 def compute_histogram(img, sigma=False):
     img_arr = np.array(img)
 
