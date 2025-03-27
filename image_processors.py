@@ -212,6 +212,8 @@ class GrayscaleProcessor(Processor):
         self._is_enabled = self.default_is_enabled
          
     def _process(self, img_arr):
+        if len(img_arr.shape) == 2:
+            return img_arr
         if not self._is_enabled:
             return img_arr
         img_arr = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 import math
 import io
-from image_processors import GrayscaleProcessor
+from image_processors import GrayscaleProcessor, XRobertsCrossKernel, YRobertsCrossKernel
 
 def convert_to_grayscale(img):
     grayscale_processor = GrayscaleProcessor()
@@ -13,7 +13,15 @@ def convert_to_grayscale(img):
 
 def compute_roberts(img):
     grayscale_img = convert_to_grayscale(img)
-    return grayscale_img
+    img_arr = np.array(grayscale_img, dtype=np.int32)
+    XKernel = XRobertsCrossKernel()
+    Gx = XKernel.convolute(img_arr)
+    YKernel = YRobertsCrossKernel()
+    Gy = YKernel.convolute(img_arr)
+
+    magnitude = np.sqrt(Gx**2 + Gy**2)
+    processed_img = Image.fromarray(magnitude.astype(np.uint8))
+    return processed_img
 
 def compute_sobel(img):
     return img
