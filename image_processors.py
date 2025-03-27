@@ -510,3 +510,11 @@ class XRobertsCrossKernel(Kernel):
 class YRobertsCrossKernel(Kernel):
     def __init__(self):
         self.kernel = np.array([[0, 1], [-1, 0]])
+
+class XSobelOperatorKernel(Kernel):
+    def __init__(self):
+        self.kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+
+class YSobelOperatorKernel(Kernel):
+    def __init__(self):
+        self.kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])

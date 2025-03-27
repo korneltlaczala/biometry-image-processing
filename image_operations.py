@@ -4,27 +4,35 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 import math
 import io
-from image_processors import GrayscaleProcessor, XRobertsCrossKernel, YRobertsCrossKernel
+from image_processors import GrayscaleProcessor, XRobertsCrossKernel, YRobertsCrossKernel, XSobelOperatorKernel, YSobelOperatorKernel
 
 def convert_to_grayscale(img):
     grayscale_processor = GrayscaleProcessor()
     grayscale_processor.set_param("_is_enabled", True)
     return grayscale_processor.process(img)
 
-def compute_roberts(img):
+def compute_edge_detection(img, method):
     grayscale_img = convert_to_grayscale(img)
     img_arr = np.array(grayscale_img, dtype=np.int32)
-    XKernel = XRobertsCrossKernel()
+    if method == "roberts":
+        XKernel = XRobertsCrossKernel()
+        YKernel = YRobertsCrossKernel()
+    elif method == "sobel":
+        XKernel = XSobelOperatorKernel()
+        YKernel = YSobelOperatorKernel()
     Gx = XKernel.convolute(img_arr)
-    YKernel = YRobertsCrossKernel()
     Gy = YKernel.convolute(img_arr)
 
     magnitude = np.sqrt(Gx**2 + Gy**2)
+    magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
     processed_img = Image.fromarray(magnitude.astype(np.uint8))
     return processed_img
 
+def compute_roberts(img):
+    return compute_edge_detection(img, "roberts")
+
 def compute_sobel(img):
-    return img
+    return compute_edge_detection(img, "sobel")
 
 def compute_histogram(img, sigma=False):
     img_arr = np.array(img)
