@@ -150,30 +150,6 @@ if uploaded_file is not None:
                 st.sidebar.slider("Strength", 0.01, 2.0, value=strength, key=chosen_filter+"_strength")
                 st.sidebar.radio("Type", ["basic", "strong"], horizontal=True, index = index, key=chosen_filter+"_type")
 
-
-    # exposure_factor = st.sidebar.slider("Exposure", 0.1, 3.0, exposure_processor.default_factor)
-    # brightness_value = st.sidebar.slider("Brightness", -255, 255, brightness_processor.default_value)
-    # contrast_factor = st.sidebar.slider("Contrast", 0.1, 3.0, contrast_processor.default_factor)
-    # gamma_factor = st.sidebar.slider("Gamma", 0.1, 3.0, gamma_processor.default_factor)
-    # grayscale = st.sidebar.checkbox("Grayscale", value=grayscale_processor.default_is_enabled)
-    # negative = st.sidebar.checkbox("Negative", value=negative_processor.default_is_enabled)
-    # binarization_enabled = st.sidebar.checkbox("Binarization", value=binarization_processor.default_is_enabled)
-    # if binarization_enabled:
-    #     binarization_threshold = st.sidebar.slider("Binarization Threshold", 0, 255, binarization_processor.default_threshold)
-    # options = ["None", "Gaussian", "Mean", "Sharpening"]
-    # chosen_filter = st.sidebar.radio("Filter", options, index=0)
-
-    # exposure_processor.set_param("_factor", exposure_factor)
-    # brightness_processor.set_param("_value", brightness_value)
-    # contrast_processor.set_param("_factor", contrast_factor)
-    # gamma_processor.set_param("_factor", gamma_factor)
-    # grayscale_processor.set_param("_is_enabled", grayscale)
-    # negative_processor.set_param("_is_enabled", negative)
-    # binarization_processor.set_param("_is_enabled", binarization_enabled)
-    # if binarization_enabled:
-    #     binarization_processor.set_param("_threshold", binarization_threshold)
-    # apply_filter(chosen_filter)
-
     try:
         exposure_processor.set_param("_factor", st.session_state.exposure_factor)
         brightness_processor.set_param("_value", st.session_state.brightness_value)
@@ -219,14 +195,6 @@ if uploaded_file is not None:
 
     if show_histogram:
         col1, col2 = st.columns(2)
-        # with col1:
-        #     st.subheader("Original Image")
-        #     plt = compute_histogram(img)
-        #     st.pyplot(plt)
-        # with col2:
-        #     st.subheader("Modified Image")
-        #     plt = compute_histogram(img_processed)
-        #     st.pyplot(plt)
         
         with col1:
             st.subheader("Original Image")
@@ -244,12 +212,10 @@ if uploaded_file is not None:
         st.subheader("Projections of Modified Image")
         col1, col2 = st.columns(2)
         with col1:
-            #st.subheader("Horizontal Projection")
             projection = horizontal_projection(img_processed)
             plt = plot_projection(projection, 'Horizontal')
             st.pyplot(plt)
         with col2:
-            #st.subheader("Vertical Projection")
             projection = vertical_projection(img_processed)
             plt = plot_projection(projection, 'Vertical')
             st.pyplot(plt)
