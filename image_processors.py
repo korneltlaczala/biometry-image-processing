@@ -91,15 +91,15 @@ class BrightnessProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        if len(img_arr.shape) ==3:
-            channels = 3
-        else:
-            channels = 1
-            img_arr = img_arr[:, :, None]
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i, j] = np.clip(img_arr[i, j] + self._value, 0, 255)
+            return img_arr
 
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
-                for c in range(channels):
+                for c in range(img_arr.shape[2]):
                     img_arr[i, j, c] = np.clip(img_arr[i, j, c] + self._value, 0, 255)
         return img_arr
 
@@ -125,11 +125,17 @@ class ExposureProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        img_arr = img_arr.copy().astype(np.float32)
+
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i, j] = np.clip(img_arr[i, j] * self._factor, 0, 255)
+            return img_arr
+
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 for c in range(img_arr.shape[2]):
-                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor)
+                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor, 0, 255)
         
         return img_arr
 
@@ -158,16 +164,27 @@ class ContrastProcessor(Processor):
 
     def _process_pixelwise(self, img_arr):  
 
-        if len(img_arr.shape) == 3:
-            channels = 3
-        else:
-            channels = 1
-            img_arr = img_arr[:, :, None]
-        
+        sum = 0
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    sum += img_arr[i, j]
+            mean = sum / img_arr.shape[0] / img_arr.shape[1]
+
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i, j] = np.clip((img_arr[i, j] - mean) * self._factor + mean, 0, 255)
+            return img_arr
+
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
-                for c in range(channels):
-                    mean = np.mean(img_arr[i, j, c])
+                for c in range(img_arr.shape[2]):
+                    sum += img_arr[i, j, c]
+        mean = sum / img_arr.shape[0] / img_arr.shape[1] / img_arr.shape[2]
+
+        for i in range(img_arr.shape[0]):
+            for j in range(img_arr.shape[1]):
+                for c in range(img_arr.shape[2]):
                     img_arr[i, j, c] = np.clip((img_arr[i, j, c] - mean) * self._factor + mean, 0, 255)
         return img_arr
     
@@ -194,15 +211,15 @@ class GammaProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-        if len(img_arr.shape) == 3:
-            channels = 3
-        else:
-            channels = 1
-            img_arr = img_arr[:, :, None]
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i, j] = np.power(img_arr[i, j] / 255.0, self._factor) * 255
+            return img_arr
         
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
-                for c in range(channels):
+                for c in range(img_arr.shape[2]):
                     img_arr[i, j, c] = np.power(img_arr[i, j, c] / 255.0, self._factor) * 255
         return img_arr
     
@@ -319,9 +336,6 @@ class BinarizationProcessor(Processor):
                 for j in range(img_arr.shape[1]):
                     img_arr[i][j] = np.where(img_arr[i][j] > self._threshold, 255, 0)
             return img_arr
-        else:
-            channels = 1
-            img_arr = img_arr[:, :, None]
         
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):

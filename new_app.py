@@ -99,6 +99,12 @@ if uploaded_file is not None:
     st.sidebar.button("Reset", on_click=reset)
     st.sidebar.subheader("Pixel Operations")
     pixelwise = st.sidebar.checkbox("Work pixel by pixel", value=False)
+    try:
+        if st.session_state.pixelwise != pixelwise:
+            reset_cache()
+    except:
+        pass
+    st.session_state.pixelwise = pixelwise
 
     processor_flow = st.session_state.processor_flow
     exposure_processor = st.session_state.exposure_processor
@@ -210,14 +216,13 @@ if uploaded_file is not None:
     )
     apply_filter(st.session_state.filter_choice)
 
-    img_processed = processor_flow.process(img, pixelwise=pixelwise)
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.subheader("Original Image")
         show_image(img, title="Original Image")
 
+    img_processed = processor_flow.process(img, pixelwise=pixelwise)
     modified_img = img.copy()
     with col2:
         st.subheader("Modified Image")
