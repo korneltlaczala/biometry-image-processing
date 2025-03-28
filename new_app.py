@@ -1,3 +1,4 @@
+from io import BytesIO
 import streamlit as st
 from PIL import Image
 import numpy as np
@@ -220,6 +221,28 @@ if uploaded_file is not None:
     with col2:
         st.subheader("Modified Image")
         show_image(img_processed, title="Modified Image")
+
+    buf = BytesIO()
+    img_processed.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+    st.download_button(
+        "Download modified image",
+        data=byte_im,
+        file_name="modified_image.png",
+        mime="image/png"
+    )
+
+    st.markdown(
+        """
+        <style>
+        .stDownloadButton>button {
+            width: 100%;
+            # height: 5rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.sidebar.subheader("Edge detection")
     show_roberts = st.sidebar.checkbox("Roberts cross")
