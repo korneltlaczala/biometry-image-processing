@@ -9,7 +9,7 @@ def compute_histogram(img, sigma=False):
 
     if len(img_arr.shape) == 2:
         colors = ['black']
-        hist_data = img_arr
+        hist_data = [img_arr]
     else:
         colors = ['red', 'green', 'blue']
         hist_data = [img_arr[:, :, i] for i in range(3)]
