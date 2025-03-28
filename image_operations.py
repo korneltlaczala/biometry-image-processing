@@ -19,7 +19,7 @@ def compute_histogram(img, sigma=False):
         hist, bins = np.histogram(data.flatten(), bins=256, range=[1, 254])
         # hist, bins = np.histogram(data.flatten(), bins=256, range=[0, 255])
         if sigma:
-            hist = gaussian_filter(hist, sigma=3)
+            hist = gaussian_filter(hist, sigma=2)
         plt.fill_between(bins[:-1], hist, color=color, alpha=0.5)
     plt.xlabel('Pixel Value')
     plt.ylabel('Frequency')
