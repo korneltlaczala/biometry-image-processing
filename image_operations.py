@@ -4,23 +4,6 @@ from PIL import Image
 from scipy.ndimage import gaussian_filter
 from image_processors import convert_to_grayscale
 
-# def compute_edge_detection(img, method):
-#     grayscale_img = convert_to_grayscale(img)
-#     img_arr = np.array(grayscale_img, dtype=np.int32)
-#     if method == "roberts":
-#         XKernel = XRobertsCrossKernel()
-#         YKernel = YRobertsCrossKernel()
-#     elif method == "sobel":
-#         XKernel = XSobelOperatorKernel()
-#         YKernel = YSobelOperatorKernel()
-#     Gx = XKernel.convolute(img_arr)
-#     Gy = YKernel.convolute(img_arr)
-
-#     magnitude = np.sqrt(Gx**2 + Gy**2)
-#     magnitude = magnitude / np.max(magnitude) * 255
-#     # magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
-#     return magnitude
-
 def compute_histogram(img, sigma=False):
     img_arr = np.array(img)
 

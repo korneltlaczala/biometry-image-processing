@@ -14,7 +14,7 @@ class ProcessorFlow:
     def add_processor(self, processor):
         self.processors.append(processor)
 
-    def process(self, img):
+    def process(self, img, pixelwise=False):
         self.last_run_changed_img = False
         changed_params = False
         for processor in self.processors:
@@ -23,7 +23,7 @@ class ProcessorFlow:
             if not changed_params:
                 img = processor.get_last_img()
                 continue
-            img = processor.process(img)
+            img = processor.process(img, pixelwise=pixelwise)
             self.last_run_changed_img = True
         return img
 
@@ -51,10 +51,13 @@ class Processor:
         self.changed_params = True
         self.last_img = None
 
-    def process(self, img):
+    def process(self, img, pixelwise=False):
         self.changed_params = False
         img_arr = np.array(img, dtype=np.int32)
-        img_arr = self._process(img_arr).astype(np.uint8)
+        if pixelwise:
+            img_arr = self._process_pixelwise(img_arr).astype(np.uint8)
+        else:
+            img_arr = self._process(img_arr).astype(np.uint8)
         self.last_img = Image.fromarray(img_arr)
         return self.last_img
 
@@ -122,11 +125,12 @@ class ExposureProcessor(Processor):
         return img_arr
 
     def _process_pixelwise(self, img_arr):  
-
+        img_arr = img_arr.copy().astype(np.float32)
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 for c in range(img_arr.shape[2]):
-                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor, 0, 255)
+                    img_arr[i, j, c] = np.clip(img_arr[i, j, c] * self._factor)
+        
         return img_arr
 
     @property
@@ -220,24 +224,25 @@ class GrayscaleProcessor(Processor):
         self._is_enabled = self.default_is_enabled
          
     def _process(self, img_arr):
-        if len(img_arr.shape) == 2:
-            return img_arr
         if not self._is_enabled:
+            return img_arr
+        if len(img_arr.shape) == 2:
             return img_arr
         img_arr = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])
         return img_arr
 
     def _process_pixelwise(self, img_arr):
-        if len(img_arr.shape) == 3:
-            channels = 3
-        else:
+        if not self._is_enabled:
             return img_arr
-        
+        if len(img_arr.shape) == 2:
+            return img_arr
+
+        new_img_arr = np.zeros((img_arr.shape[0], img_arr.shape[1]))
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
-                for c in range(channels):
-                    img_arr[i, j, c] = np.dot(img_arr[..., :3], [0.2989, 0.5870, 0.1140])
-        return img_arr
+                value = np.dot(img_arr[i][j], [0.2989, 0.5870, 0.1140])
+                new_img_arr[i][j] = value
+        return new_img_arr
 
     @property
     def is_enabled(self):
@@ -264,18 +269,22 @@ class NegativeProcessor(Processor):
         return img_arr
     
     def _process_pixelwise(self, img_arr):  
-        if len(img_arr.shape) == 3:
-            channels = 3
-        else:
-            channels = 1
-            img_arr = img_arr[:, :, None]
-        
+        if not self._is_enabled:
+            return img_arr
+
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i][j] = 255 - img_arr[i][j]
+            return img_arr
+
+        channels = 3
         for i in range(img_arr.shape[0]):
             for j in range(img_arr.shape[1]):
                 for c in range(channels):
-                    img_arr[i, j, c] = img_arr[i, j, c] - 255
+                    img_arr[i, j, c] = 255 - img_arr[i, j, c]
         return img_arr
-    
+
     @property
     def is_enabled(self):
         return self._is_enabled
@@ -305,8 +314,11 @@ class BinarizationProcessor(Processor):
     def _process_pixelwise(self, img_arr):  
         if not self._is_enabled:
             return img_arr
-        if len(img_arr.shape) == 3:
-            channels = 3
+        if len(img_arr.shape) == 2:
+            for i in range(img_arr.shape[0]):
+                for j in range(img_arr.shape[1]):
+                    img_arr[i][j] = np.where(img_arr[i][j] > self._threshold, 255, 0)
+            return img_arr
         else:
             channels = 1
             img_arr = img_arr[:, :, None]
@@ -364,6 +376,9 @@ class MeanFilterProcessor(FilterProcessor):
         img_arr = kernel.convolute(img_arr)
         return img_arr
 
+    def _process_pixelwise(self, img_arr):
+        return self._process(img_arr)
+
     def __repr__(self):
         return f"MeanFilterProcessor(is_enabled={self._is_enabled}, size={self._size})"
 
@@ -382,6 +397,9 @@ class GaussianFilterProcessor(FilterProcessor):
         kernel = GaussianBlurKernel(self.size, self.sigma)
         img_arr = kernel.convolute(img_arr)
         return img_arr
+
+    def _process_pixelwise(self, img_arr):
+        return self._process(img_arr)
 
     @property
     def sigma(self):
@@ -414,6 +432,9 @@ class SharpeningFilterProcessor(FilterProcessor):
             kernel = StrongSharpeningKernel(self.size, self.strength)
         img_arr = kernel.convolute(img_arr)
         return img_arr
+
+    def _process_pixelwise(self, img_arr):
+        return self._process(img_arr)
     
     @property
     def strength(self):
