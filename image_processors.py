@@ -399,7 +399,7 @@ class SharpeningFilterProcessor(FilterProcessor):
 
     def __init__(self):
         super().__init__()
-        self.default_strength = 0.1
+        self.default_strength = 1.0
         self._strength = self.default_strength
         self.default_type = "basic"
         self._type = self.default_type
@@ -442,16 +442,19 @@ class EdgeDetectionProcessor(Processor):
     def process(self, img, threshold):
         if not self.computation_needed:
             return self.apply_threshhold(self.last_img, threshold)
-        self.computation_needed = False
 
         img = convert_to_grayscale(img)
         img_arr = np.array(img, dtype=np.int32)
         img_arr = self._process(img_arr).astype(np.uint8)
         self.last_img = Image.fromarray(img_arr)
         processed_img = self.apply_threshhold(self.last_img, threshold)
+
+        self.computation_needed = False
         return processed_img
 
     def apply_threshhold(self, img, threshold):
+        if threshold == -1:
+            return img
         img_arr = np.array(img, dtype=np.int32)
         img_arr[img_arr < threshold] = 0
         img_arr[img_arr >= threshold] = 255

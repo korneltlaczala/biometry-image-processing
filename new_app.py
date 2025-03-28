@@ -194,7 +194,18 @@ if uploaded_file is not None:
     if binarization_processor.is_enabled:
         st.sidebar.slider("Binarization Threshold", 0, 255, value=binarization_processor.threshold, key="binarization_threshold")
     options = ["None", "Gaussian", "Mean", "Sharpening"]
+    st.sidebar.subheader("Filter")
     st.sidebar.radio("Filter", options, index=0, key="filter_choice")
+    st.markdown(
+        """
+        <style>
+        div[class="stRadio"] > label {
+            display: none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     apply_filter(st.session_state.filter_choice)
 
     img_processed = processor_flow.process(img)
@@ -213,7 +224,7 @@ if uploaded_file is not None:
     st.sidebar.subheader("Edge detection")
     show_roberts = st.sidebar.checkbox("Roberts cross")
     show_sobel = st.sidebar.checkbox("Sobel operator")
-    edge_detection_threshold = st.sidebar.slider("Threshold", 0, 255, 100, key="edge_detection_threshold")
+    edge_detection_threshold = st.sidebar.slider("Threshold", -1, 255, 40, key="edge_detection_threshold")
     computation_needed = processor_flow.last_run_changed_img
 
     if computation_needed:
