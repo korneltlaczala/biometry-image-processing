@@ -1,14 +1,21 @@
 import numpy as np
 from PIL import Image
 
+def convert_to_grayscale(img):
+    grayscale_processor = GrayscaleProcessor()
+    grayscale_processor.set_param("_is_enabled", True)
+    return grayscale_processor.process(img)
+
 class ProcessorFlow:
     def __init__(self):
         self.processors = []
+        self.last_run_changed_img = True
 
     def add_processor(self, processor):
         self.processors.append(processor)
 
     def process(self, img):
+        self.last_run_changed_img = False
         changed_params = False
         for processor in self.processors:
             if processor.changed_params:
@@ -17,6 +24,7 @@ class ProcessorFlow:
                 img = processor.get_last_img()
                 continue
             img = processor.process(img)
+            self.last_run_changed_img = True
         return img
 
     def reset_cache(self):
@@ -422,6 +430,54 @@ class SharpeningFilterProcessor(FilterProcessor):
 
     def __repr__(self):
         return f"SharpeningFilterProcessor(is_enabled={self._is_enabled}, size={self._size}, strength={self._strength}, type={self._type})"
+
+
+
+class EdgeDetectionProcessor(Processor):
+
+    def __init__(self):
+        super().__init__()
+        self.computation_needed = True
+
+    def process(self, img, threshold):
+        if not self.computation_needed:
+            return self.apply_threshhold(self.last_img, threshold)
+        self.computation_needed = False
+
+        img = convert_to_grayscale(img)
+        img_arr = np.array(img, dtype=np.int32)
+        img_arr = self._process(img_arr).astype(np.uint8)
+        self.last_img = Image.fromarray(img_arr)
+        processed_img = self.apply_threshhold(self.last_img, threshold)
+        return processed_img
+
+    def apply_threshhold(self, img, threshold):
+        img_arr = np.array(img, dtype=np.int32)
+        img_arr[img_arr < threshold] = 0
+        img_arr[img_arr >= threshold] = 255
+        return Image.fromarray(img_arr.astype(np.uint8))
+
+    def _compute_edge_detection(self, img_arr):
+        Gx = self.XKernel.convolute(img_arr)
+        Gy = self.YKernel.convolute(img_arr)
+
+        magnitude = np.sqrt(Gx**2 + Gy**2)
+        magnitude = magnitude / np.max(magnitude) * 255
+        # magnitude = (magnitude - np.min(magnitude)) / (np.max(magnitude) - np.min(magnitude)) * 255
+        return magnitude
+
+class RobertsCrossProcessor(EdgeDetectionProcessor):
+    def _process(self, img_arr):
+        self.XKernel = XRobertsCrossKernel()
+        self.YKernel = YRobertsCrossKernel()
+        return self._compute_edge_detection(img_arr)
+        
+class SobelOperatorProcessor(EdgeDetectionProcessor):
+    def _process(self, img_arr):
+        self.XKernel = XSobelOperatorKernel()
+        self.YKernel = YSobelOperatorKernel()
+        return self._compute_edge_detection(img_arr)
+
 
 class Kernel():
 

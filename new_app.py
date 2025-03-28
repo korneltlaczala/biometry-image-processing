@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from image_processors import *
 from image_operations import compute_histogram, horizontal_projection, vertical_projection, plot_projection
-from image_operations import compute_roberts, compute_sobel
+# from  import compute_roberts, compute_sobel
 
 def show_image(image, title="image"):
     st.image(image, caption=title, use_container_width=True)
@@ -32,8 +32,8 @@ st.title("Image Processing App")
 
 if "processor_flow" not in st.session_state:
     st.session_state.processor_flow = ProcessorFlow()
-    st.session_state.brightness_processor = BrightnessProcessor()
     st.session_state.exposure_processor = ExposureProcessor()
+    st.session_state.brightness_processor = BrightnessProcessor()
     st.session_state.contrast_processor = ContrastProcessor()
     st.session_state.gamma_processor = GammaProcessor()
     st.session_state.grayscale_processor = GrayscaleProcessor()
@@ -42,9 +42,13 @@ if "processor_flow" not in st.session_state:
     st.session_state.mean_filter_processor = MeanFilterProcessor()
     st.session_state.gaussian_filter_processor = GaussianFilterProcessor()
     st.session_state.sharpening_filter_processor = SharpeningFilterProcessor()
+    st.session_state.roberts_original_processor = RobertsCrossProcessor()
+    st.session_state.sobel_original_processor = SobelOperatorProcessor()
+    st.session_state.roberts_processed_processor = RobertsCrossProcessor()
+    st.session_state.sobel_processed_processor = SobelOperatorProcessor()
 
-    st.session_state.processor_flow.add_processor(st.session_state.brightness_processor)
     st.session_state.processor_flow.add_processor(st.session_state.exposure_processor)
+    st.session_state.processor_flow.add_processor(st.session_state.brightness_processor)
     st.session_state.processor_flow.add_processor(st.session_state.contrast_processor)
     st.session_state.processor_flow.add_processor(st.session_state.gamma_processor)
     st.session_state.processor_flow.add_processor(st.session_state.grayscale_processor)
@@ -53,14 +57,21 @@ if "processor_flow" not in st.session_state:
     st.session_state.processor_flow.add_processor(st.session_state.mean_filter_processor)
     st.session_state.processor_flow.add_processor(st.session_state.gaussian_filter_processor)
     st.session_state.processor_flow.add_processor(st.session_state.sharpening_filter_processor)
+
+def reset_cache():
+    st.session_state.processor_flow.reset_cache()
+    st.session_state.roberts_original_processor.computation_needed = True
+    st.session_state.sobel_original_processor.computation_needed = True
+    st.session_state.roberts_processed_processor.computation_needed = True
+    st.session_state.sobel_processed_processor.computation_needed = True
     
 uploaded_file = st.file_uploader("Choose file", type=["jpg", "png", "jpeg"])
 downscale = st.checkbox("Downscale", value=True)
 try:
     if st.session_state.uploaded_file != uploaded_file:
-        st.session_state.processor_flow.reset_cache()
+        reset_cache()
     elif st.session_state.downscale != downscale:
-        st.session_state.processor_flow.reset_cache()
+        reset_cache()
 except:
     pass
 st.session_state.uploaded_file = uploaded_file
@@ -75,7 +86,7 @@ if uploaded_file is not None:
         max_dim = st.number_input("Max dimension", min_value=8, max_value=2048, value=512)
         try:
             if st.session_state.max_dim != max_dim:
-                st.session_state.processor_flow.reset_cache()
+                reset_cache()
         except:
             pass
         st.session_state.max_dim = max_dim
@@ -98,6 +109,10 @@ if uploaded_file is not None:
     mean_filter_processor = st.session_state.mean_filter_processor
     gaussian_filter_processor = st.session_state.gaussian_filter_processor
     sharpening_filter_processor = st.session_state.sharpening_filter_processor
+    roberts_original_processor = st.session_state.roberts_original_processor
+    sobel_original_processor = st.session_state.sobel_original_processor
+    roberts_processed_processor = st.session_state.roberts_processed_processor
+    sobel_processed_processor = st.session_state.sobel_processed_processor
 
     def apply_filter(chosen_filter):
 
@@ -199,23 +214,28 @@ if uploaded_file is not None:
     show_roberts = st.sidebar.checkbox("Roberts cross")
     show_sobel = st.sidebar.checkbox("Sobel operator")
     edge_detection_threshold = st.sidebar.slider("Threshold", 0, 255, 100, key="edge_detection_threshold")
+    computation_needed = processor_flow.last_run_changed_img
+
+    if computation_needed:
+        roberts_processed_processor.computation_needed = True
+        sobel_processed_processor.computation_needed = True
 
     if show_roberts:
         col1, col2 = st.columns(2)
         with col1:
-            roberts_original = compute_roberts(img, edge_detection_threshold)
+            roberts_original = roberts_original_processor.process(img, edge_detection_threshold)
             show_image(roberts_original, title="Roberts cross of Original Image")
         with col2:
-            roberts_processed = compute_roberts(img_processed, edge_detection_threshold)
+            roberts_processed = roberts_processed_processor.process(img_processed, edge_detection_threshold)
             show_image(roberts_processed, title="Roberts cross of Modified Image")
 
     if show_sobel:
         col1, col2 = st.columns(2)
         with col1:
-            sobel_original = compute_sobel(img, edge_detection_threshold)
+            sobel_original = sobel_original_processor.process(img, edge_detection_threshold)
             show_image(sobel_original, title="Sobel operator of Original Image")
         with col2:
-            sobel_proocessed = compute_sobel(img_processed, edge_detection_threshold)
+            sobel_proocessed = sobel_processed_processor.process(img_processed, edge_detection_threshold)
             show_image(sobel_proocessed, title="Sobel operator of Modified Image")
 
         
